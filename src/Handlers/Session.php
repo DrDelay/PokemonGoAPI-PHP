@@ -5,7 +5,7 @@ namespace NicklasW\PkmGoApi\Handlers;
 class Session {
 
     /**
-     * @var AuthTicket
+     * @var \POGOProtos\Networking\Envelopes\AuthTicket
      */
     protected $authenticationTicket;
 
@@ -20,15 +20,20 @@ class Session {
     protected $apiUrl;
 
     /**
-     * @return AuthTicket
+     * @return \POGOProtos\Networking\Envelopes\AuthTicket
      */
     public function getAuthenticationTicket()
     {
+        if ($this->authenticationTicket) {
+            $this->authenticationTicket->getStart()->seek(0);
+            $this->authenticationTicket->getEnd()->seek(0);
+        }
+
         return $this->authenticationTicket;
     }
 
     /**
-     * @param AuthTicket $authenticationTicket
+     * @param \POGOProtos\Networking\Envelopes\AuthTicket $authenticationTicket
      */
     public function setAuthenticationTicket($authenticationTicket)
     {
