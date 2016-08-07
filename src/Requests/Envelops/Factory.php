@@ -2,8 +2,8 @@
 
 namespace NicklasW\PkmGoApi\Requests\Envelops;
 
-use POGOProtos\Networking\Envelopes\RequestEnvelope_AuthInfo;
-use POGOProtos\Networking\Envelopes\RequestEnvelope_AuthInfo_JWT;
+use POGOProtos\Networking\Envelopes\RequestEnvelope\AuthInfo;
+use POGOProtos\Networking\Envelopes\RequestEnvelope\AuthInfo\JWT;
 
 class Factory {
 
@@ -17,7 +17,7 @@ class Factory {
      *
      * @param string $type
      * @param array  ...$parameters
-     * @return ProtobufMessage|null
+     * @return \Protobuf\Message|null
      */
     public function create($type, ...$parameters)
     {
@@ -40,15 +40,15 @@ class Factory {
      *
      * @param string $type
      * @param string $token
-     * @return RequestEnvelope_AuthInfo
+     * @return AuthInfo
      */
     protected function authInfoEnvelope($type, $token)
     {
-        $authInfoJWT = new RequestEnvelope_AuthInfo_JWT();
+        $authInfoJWT = new JWT();
         $authInfoJWT->setContents($token);
         $authInfoJWT->setUnknown2(59);
 
-        $authInfoEnvelope = new RequestEnvelope_AuthInfo();
+        $authInfoEnvelope = new AuthInfo();
         $authInfoEnvelope->setProvider($type);
         $authInfoEnvelope->setToken($authInfoJWT);
 

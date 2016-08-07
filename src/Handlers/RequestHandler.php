@@ -13,6 +13,7 @@ use NicklasW\PkmGoApi\Requests\Request;
 use POGOProtos\Networking\Envelopes\RequestEnvelope;
 use POGOProtos\Networking\Envelopes\ResponseEnvelope;
 use POGOProtos\Networking\Requests\Request as NetworkRequest;
+use POGOProtos\Networking\Requests\RequestType;
 use Psr\Http\Message\ResponseInterface;
 
 class RequestHandler {
@@ -160,10 +161,17 @@ class RequestHandler {
      */
     protected function build($request)
     {
-        // Prepare the network request
-        $networkRequest = new NetworkRequest();
-        $networkRequest->setRequestType($request->getType());
-        $networkRequest->setRequestMessage($request->getMessage()->toProtobuf());
+        $requestType = $request->getType();
+        $request = null;
+        if ($requestType instanceof NetworkRequest) {
+            $request = $requestType;
+        } else {
+            $request = new NetworkRequest();
+            if (is_int($requestType)) {
+                $requestType = RequestType::valueOf($requestType);
+            }
+            $request->setRequestType($requestType);
+        }
 
         // Prepare the request envelope
         $requestEnvelope = new RequestEnvelope();
@@ -179,7 +187,7 @@ class RequestHandler {
         $requestEnvelope->setAltitude(0);
 
         // Add request
-        $requestEnvelope->addAllRequests(array($networkRequest));
+        $requestEnvelope->addRequests($request);
 
         return $requestEnvelope;
     }
@@ -206,7 +214,7 @@ class RequestHandler {
         Log::debug(sprintf('The request envelope. Content: \'%s\'', print_r($requestEnvelope, true)));
 
         // Prepare the HTTP request
-        $request = new HttpRequest('POST', $url, array(), $requestEnvelope->toProtobuf());
+        $request = new HttpRequest('POST', $url, array(), $requestEnvelope->toStream());
 
         // Execute the request
         $response = $this->client()->send($request);
@@ -226,11 +234,8 @@ class RequestHandler {
      */
     protected function unmarshall($response)
     {
-        // Initialize the response envelope
-        $responseEnvelop = new ResponseEnvelope();
-
-        // Unmarshall the response
-        $responseEnvelop->read($response->getBody()->getContents());
+        // Initialize the response envelope & Unmarshall the response
+        $responseEnvelop = new ResponseEnvelope($response->getBody()->getContents());
 
         return $responseEnvelop;
     }

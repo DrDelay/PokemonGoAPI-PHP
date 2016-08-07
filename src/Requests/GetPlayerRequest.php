@@ -13,7 +13,7 @@ class GetPlayerRequest extends Request {
     /**
      * @var integer The request type
      */
-    protected $type = RequestType::GET_PLAYER;
+    protected $type = RequestType::GET_PLAYER_VALUE;
 
     /**
      * @var ProtobufMessage The request message
@@ -25,11 +25,11 @@ class GetPlayerRequest extends Request {
      */
     public function getType()
     {
-        return RequestType::GET_PLAYER;;
+        return $this->type;
     }
 
     /**
-     * @return ProtobufMessage
+     * @return \Protobuf\Message
      */
     public function getMessage()
     {
@@ -45,13 +45,10 @@ class GetPlayerRequest extends Request {
     public function handleResponse($data)
     {
         // Retrieve the specific request data
-        $requestData = current($data->getReturnsArray());
+        $requestData = current($data->getReturnsList());
 
         // Initialize the player response
-        $playerResponse = new GetPlayerResponse();
-
-        // Unmarshall the response
-        $playerResponse->read($requestData);
+        $playerResponse = new GetPlayerResponse($requestData);
 
         $this->setData($playerResponse);
     }
